@@ -1,0 +1,22 @@
+key: analysis
+before:
+  PropagateCorrelationId:
+    directive: PropagateCorrelationId
+after: 
+  OnError:
+    directive: OnError
+    groups:
+      - ERROR_FLOW
+endpoints:
+  post /{api}/analysis:
+    Analysis:
+      directive: Analysis
+    Output:
+      directive: ModifyMessage
+      status: 201
+      body: $.memory.report
+      headers: 
+        Content-Type: application/json
+  get /{api}/{line}:
+    Read:
+      directive: Read
