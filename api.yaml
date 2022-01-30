@@ -2,7 +2,7 @@ key: analysis
 before:
   PropagateCorrelationId:
     directive: PropagateCorrelationId
-after: 
+after:
   OnError:
     directive: OnError
     groups:
@@ -11,6 +11,16 @@ endpoints:
   post /purge:
     Purge:
       directive: Purge
+  post /multipleAnalysis:
+    LoadAnalysisRequest:
+      directive: LoadAndValidateModel
+      source: $.message.bodyAsArray
+      target: analysisRequest
+    ForTheWorker:
+      directive: ForTheWorker
+      identifier: true
+    MultipleAnalysis:
+      directive: MultipleAnalysis
   post /{api}/analysis:
     Analysis:
       directive: Analysis

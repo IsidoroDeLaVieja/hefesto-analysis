@@ -8,11 +8,15 @@ if (!$date) {
 $api = $state->message()->getPathParam('api');
 $path =   $state->memory()->get('hefesto-pathstorage')."../$api/hefesto-$date.log";
 
-$handle = fopen($path, 'r');
+$handle = false;
+try {
+    $handle = fopen($path, 'r');
+} catch (\Throwable $e) { }
+
 if (!$handle) {
     $state->memory()->set('error.status',404);
     $state->memory()->set('error.message', "$date without log");
-    throw new Exception("$date without log");
+    throw new \Exception("$date without log");
 }
 
 $correlationId = $state->message()->getQueryParam('correlationId');
