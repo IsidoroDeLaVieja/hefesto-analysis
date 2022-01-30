@@ -8,6 +8,9 @@ after:
     groups:
       - ERROR_FLOW
 endpoints:
+  post /purge:
+    Purge:
+      directive: Purge
   post /{api}/analysis:
     Analysis:
       directive: Analysis
