@@ -23,6 +23,7 @@ $correlationId = $state->message()->getQueryParam('correlationId');
 $status = $state->message()->getQueryParam('status');
 
 $report = [];
+$reportWithoutStatus = [];
 while (($line = fgets($handle)) !== false) {
     $trace = json_decode($line,true);
     $init = $trace[0];
@@ -48,9 +49,20 @@ while (($line = fgets($handle)) !== false) {
         ];
     }
     $report[$key]['count']++;
+
+    $keyWithoutStatus = $init['type'].' '.$init['verb'].' '.$init['path'];
+    if (!isset($reportWithoutStatus[$keyWithoutStatus])) {
+        $reportWithoutStatus[$keyWithoutStatus] = 0;
+    }
+    $reportWithoutStatus[$keyWithoutStatus]++;
 }
 
 fclose($handle);
+
+foreach($report as $key => $request) {
+    $keyWithoutStatus = $request['type'].' '.$request['verb'].' '.$request['path'];
+    $report[$key]['percentage'] = round(100 * $request['count'] / $reportWithoutStatus[$keyWithoutStatus]);
+}
 
 $report = array_values($report);
 $state->memory()->set('report',$report);

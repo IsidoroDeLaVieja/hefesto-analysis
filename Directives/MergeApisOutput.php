@@ -16,8 +16,21 @@ foreach($config['apisOutput'] as $apiOutput) {
         } else {
             $mergedApisOutput[$key] = $requestAnalysis;
         }
-    
     }
+}
+
+$reportWithoutStatus = [];
+foreach($mergedApisOutput as $key => $request) {
+    $keyWithoutStatus = $request['type'].' '.$request['verb'].' '.$request['path'];
+    if (!isset($reportWithoutStatus[$keyWithoutStatus])) {
+        $reportWithoutStatus[$keyWithoutStatus] = 0;
+    }
+    $reportWithoutStatus[$keyWithoutStatus] += $request['count'];
+}
+
+foreach($mergedApisOutput as $key => $request) {
+    $keyWithoutStatus = $request['type'].' '.$request['verb'].' '.$request['path'];
+    $mergedApisOutput[$key]['percentage'] = round(100 * $request['count'] / $reportWithoutStatus[$keyWithoutStatus]);
 }
 
 $state->memory()->set('mergedApisOutput',array_values($mergedApisOutput));
