@@ -21,6 +21,10 @@ if (!$handle) {
 
 $correlationId = $state->message()->getQueryParam('correlationId');
 $status = $state->message()->getQueryParam('status');
+$headerKey = $state->message()->getQueryParam('headerKey');
+$headerValue = $state->message()->getQueryParam('headerValue');
+$ip = $state->message()->getQueryParam('ip');
+$returnIps = $state->message()->getQueryParam('returnIps');
 
 $report = [];
 $reportWithoutStatus = [];
@@ -28,6 +32,7 @@ while (($line = fgets($handle)) !== false) {
     $trace = json_decode($line,true);
     $init = $trace[0];
     $finish = $trace[count($trace) - 1];
+    $medium = count($trace) === 3 ? $trace[count($trace) - 2] : null;
 
     if ($correlationId && 
         (!isset($finish['correlationId']) || $correlationId !== $finish['correlationId'])) {
@@ -36,6 +41,21 @@ while (($line = fgets($handle)) !== false) {
     if ($status && 
         (!isset($finish['status']) || $status != $finish['status'])) {
             continue;
+    }
+    if ($headerKey && $headerValue &&
+        (!isset($init['headers'][$headerKey]) || strpos($init['headers'][$headerKey], $headerValue) === false)) {
+        continue;
+    }
+    if ($ip && 
+        (!isset($medium['ip']) || $medium['ip'] !== $ip) ) {
+        continue;
+    }
+
+    if ($returnIps) {
+        if (isset($medium['ip'])) {
+            $report[$medium['ip']] = $medium['ip'];
+        }
+        continue;
     }
     
     $key = $init['type'].' '.$init['verb'].' '.$init['path'].' ---> '.$finish['status'];
@@ -58,6 +78,12 @@ while (($line = fgets($handle)) !== false) {
 }
 
 fclose($handle);
+
+if ($returnIps) {
+    $report = array_values($report);
+    $state->memory()->set('report',$report);
+    return;
+}
 
 foreach($report as $key => $request) {
     $keyWithoutStatus = $request['type'].' '.$request['verb'].' '.$request['path'];

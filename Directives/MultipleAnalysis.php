@@ -2,21 +2,25 @@
 
 $request = $state->memory()->get('analysisRequest');
 
-$correlationId = '';
-if (isset($request['correlationId'])) {
-    $correlationId = '&correlationId='.$request['correlationId'];
-}
-
 $output = [];
 foreach ($request['apis'] as $api) {
     $apisOutput = [];
     foreach ($request['dates'] as $date) {
         
+        $queryParams = [
+            'date' => $date
+        ];
+
+        if (isset($request['correlationId'])) {
+            $queryParams['correlationId'] = $request['correlationId'];
+        }
+
         Pull::run($state,[
             'host' => $state->memory()->get('hefesto-localhost'),
-            'path' => "/analysis/$api/analysis?date=".$date.$correlationId,
+            'path' => "/analysis/$api/analysis",
             'body' => '',
-            'verify' => false
+            'verify' => false,
+            'queryParams' => $queryParams
         ]);
         if ($state->message()->getStatus() === 201) {
             $apisOutput[] = $state->message()->getBodyAsArray();
