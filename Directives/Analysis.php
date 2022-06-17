@@ -23,6 +23,7 @@ $correlationId = $state->message()->getQueryParam('correlationId');
 $status = $state->message()->getQueryParam('status');
 $headerKey = $state->message()->getQueryParam('headerKey');
 $headerValue = $state->message()->getQueryParam('headerValue');
+$path = $state->message()->getQueryParam('path');
 $ip = $state->message()->getQueryParam('ip');
 $returnIps = $state->message()->getQueryParam('returnIps');
 
@@ -48,6 +49,10 @@ while (($line = fgets($handle)) !== false) {
     }
     if ($ip && 
         (!isset($medium['ip']) || $medium['ip'] !== $ip) ) {
+        continue;
+    }
+    if ($path && 
+        (!isset($init['path']) || $path !== $init['path'])) {
         continue;
     }
 
